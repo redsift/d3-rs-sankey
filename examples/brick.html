@@ -22,6 +22,7 @@
   <body>
     <div id="buttons">
       <button onclick="toggleTheme()">Theme</button>
+      <button onclick="toggleFlow()">Flow</button>
       <button onclick="toggleAnimated()">Animated</button>
       
     </div>
@@ -40,7 +41,9 @@
     var links = data.links;
 
     var theme = 'light',
-        animated = false;
+        animated = false,
+        flow = false;
+
     var sankey = d3_rs_sankey.html('flare')
                     .theme(theme);
 
@@ -56,11 +59,13 @@
     update(false);
     
     setInterval(function() {
-      data.links = links.filter(() => Math.random() > 0.001).map(d => ({  "source": d.source,
-                                      "target": d.target,
-                                      "value": Math.max(1.0, d.value+((Math.random() - 0.5) * 190))
-                                    }));
-      update(true);
+      if (animated) {
+        data.links = links.filter(() => Math.random() > 0.001).map(d => ({  "source": d.source,
+                                        "target": d.target,
+                                        "value": Math.max(1.0, d.value+((Math.random() - 0.5) * 190))
+                                      }));
+        update(true);
+      }
     }, 1000);
 
     // -- buttons
@@ -76,12 +81,17 @@
       update(true);
     }
 
-    function toggleAnimated() {
-      animated = !animated;
+    function toggleFlow() {
+      flow = !flow;
 
-      sankey.animated(animated);
+      sankey.animated(flow);
       update(true);
     }
+
+    function toggleAnimated() {
+      animated = !animated
+    }
+    
     </script>
   </body>
 </html>
