@@ -33,7 +33,8 @@ export default function sankeyChart(id) {
       pathFill = null,
       nodeFill = null,
       label = null, 
-      tipHtml = null;
+      tipHtml = null,
+      animated = false;
   
   let tid = null;
   if (id) tid = 'tip-' + id;
@@ -170,21 +171,23 @@ export default function sankeyChart(id) {
         nodeUpdate.on('click', onClick);
       }
 
-      let link = g.selectAll('path').data(links); // stability key?
+      let link = g.selectAll('path').data(links, d => d.source.index << 16 || d.target.index); // stability key
 
       let linkEnter = link.enter()
         .append('path')
           .attr('fill', 'none')
-          .attr('stroke-opacity', 0.0);
-      let linkUpdate = linkEnter.merge(link);
+          .attr('stroke-opacity', 0.85)
+          .attr('stroke-width', 0.0);
+
+      let linkUpdate = linkEnter.merge(link)
+                          .attr('class', animated ? 'animated' : '');
       
       if (transition === true) {
         linkUpdate = linkUpdate.transition(context);
       }
 
       linkUpdate.attr('d', sankeyLinkHorizontal())
-        .attr('stroke', d => 'grey')
-        .attr('stroke-opacity', 0.33)
+        .attr('stroke', d => display[theme].grid)
         .attr('stroke-width', d => Math.max(1, d.width));
       
       let linkExit = link.exit();
@@ -221,6 +224,17 @@ export default function sankeyChart(id) {
                   ${_impl.self()} rect {
                     stroke: ${display[_theme].axis};
                     stroke-width: ${widths.outline}; 
+                  }
+                  ${_impl.self()} path {
+                    stroke-dasharray: 2;
+                  }
+                  ${_impl.self()} path.animated {
+                    animation: dash 35s linear infinite reverse;
+                  }
+                  @keyframes dash {
+                    to {
+                      stroke-dashoffset: 1000;
+                    }
                   }
                 `;
   
@@ -283,6 +297,11 @@ export default function sankeyChart(id) {
   _impl.tipHtml = function(value) {
     return arguments.length ? (tipHtml = value, _impl) : tipHtml;
   };  
+
+  _impl.animated = function(value) {
+    return arguments.length ? (animated = value, _impl) : animated;
+  };  
+  
 
   return _impl;
 }
