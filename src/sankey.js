@@ -17,6 +17,7 @@ const DEFAULT_SIZE = 800;
 const DEFAULT_ASPECT = 1.0;
 const DEFAULT_MARGIN = 32;
 const DEFAULT_TIP_OFFSET = 7;
+const DEFAULT_TEXT_OFFSET = 6;
 
 const DEFAULT_NODE_PX = 16;
 const ZERO_VALUE_PX = Math.round(DEFAULT_NODE_PX / 1.618);
@@ -269,6 +270,8 @@ export default function sankeyChart(id) {
       let labelEnter = label.enter()
         .append('text')
           .attr('dy', '0.35em')
+          .attr('x', d => d.x0 < w / 2 ? d.x1 + DEFAULT_TEXT_OFFSET : d.x0 - DEFAULT_TEXT_OFFSET) //todo: cfg;
+          .attr('y', d => (d.y1 + d.y0) / 2)   
           .attr('fill-opacity', 0.0);
 
       let labelUpdate = labelEnter.merge(label)
@@ -281,7 +284,7 @@ export default function sankeyChart(id) {
       }
 
       labelUpdate.attr('fill-opacity', 1.0)      
-                .attr('x', d => d.x0 < w / 2 ? d.x1 + 6 : d.x0 - 6) //todo: cfg;
+                .attr('x', d => d.x0 < w / 2 ? d.x1 + DEFAULT_TEXT_OFFSET : d.x0 - DEFAULT_TEXT_OFFSET) //todo: cfg;
                 .attr('y', d => (d.y1 + d.y0) / 2)    
                 .attr('fill', _labelFill);
       
@@ -320,6 +323,7 @@ export default function sankeyChart(id) {
                   ${_impl.self()} g.nodes path {
                     stroke: ${display[_theme].axis};
                     stroke-width: ${widths.outline*2.0}; 
+                    shape-rendering: crispEdges;
                   }
                   ${_impl.self()} path {
                     pointer-events: all;

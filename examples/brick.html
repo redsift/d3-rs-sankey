@@ -38,10 +38,12 @@
       <button onclick="toggleFlow()">Flow</button>
       <button onclick="toggleAnimated()">Animated</button>
       <button onclick="toggleRelayout()">Relayout</button>      
+      <button onclick="toggleSplit()">Split</button>  
     </div>
     <div id="elm"></div>
         
     <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://unpkg.com/d3-sankey@0"></script>
     <script src="//static.redsift.io/reusable/d3-rs-theme/latest/d3-rs-theme.umd-es2015.min.js"></script>
     <script src="/d3-rs-sankey.umd-es2015.min.js"></script>
     <script>
@@ -75,6 +77,9 @@
 
     var sankey = d3_rs_sankey.html('flare')
                     .theme(theme)
+                    .nodeAlign(function (d, n) {
+                      return highlight && highlight.name && highlight.name == d.name ? d3.sankeyJustify(highlight,n) : d3.sankeyJustify(d,n);
+                    })
                     .nodeClass(function (d) {
                       return highlight && highlight.name && d.index == highlight.index ? 'highlight' : null;
                     })
@@ -90,7 +95,7 @@
                       return isPathSelected(d) ? 'selected' : null;
                     })
                     .pathFill(function (d) {
-                      return isPathSelected(d) ? '#ffd0d0' : '#d0d0d0';
+                      return isPathSelected(d) ? '#ffd0d0' : '#e0e0e0';
                     });
 
     
@@ -159,6 +164,13 @@
       onlyLinks = true;
       animated = !animated
     }    
+
+    function toggleSplit() {
+      if (!highlight || !highlight.name) return;
+
+      data.nodes.push(highlight);
+      update(true);
+    }
     
     </script>
   </body>
