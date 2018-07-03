@@ -1,6 +1,6 @@
 
 import { select } from 'd3-selection';
-import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
+import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey';
 import { scaleOrdinal } from 'd3-scale';
 
 import { body as tip } from '@redsift/d3-rs-tip';
@@ -18,6 +18,9 @@ const DEFAULT_ASPECT = 1.0;
 const DEFAULT_MARGIN = 32;
 const DEFAULT_TIP_OFFSET = 7;
 
+const DEFAULT_NODE_PX = 15;
+const ZERO_VALUE_PX = DEFAULT_NODE_PX;
+
 export default function sankeyChart(id) {
   let classed = 'chart-sankey', 
       theme = 'light',
@@ -30,12 +33,21 @@ export default function sankeyChart(id) {
       scale = 1.0,
       importFonts = true,
       onClick = null,
+      onPathClick = null,
       pathFill = null,
       nodeFill = null,
       label = null, 
       tipHtml = null,
-      animated = false;
+      pathClass = null,
+      onlyLinks = false,
+      nodeWidth = DEFAULT_NODE_PX,
+      nodePadding = 10,
+      nodeAlign = sankeyJustify,
+      nodeClass = null,
+      labelFill = null;
   
+  let _tickGraph = null;
+
   let tid = null;
   if (id) tid = 'tip-' + id;
   let rtip = tip(tid)
@@ -70,6 +82,14 @@ export default function sankeyChart(id) {
     } else if (typeof(_nodeFill) !== 'function') {
       _nodeFill = () => nodeFill;
     }
+
+    let _labelFill = labelFill;
+    if (_labelFill == null) {
+      _labelFill = () => display[theme].text
+    } else if (typeof(_labelFill) !== 'function') {
+      _labelFill = () => labelFill;
+    }
+    
 
     rtip.offset([ -DEFAULT_TIP_OFFSET, 1 ]).style(null).html(tipHtml).transition(333);
 
@@ -112,23 +132,42 @@ export default function sankeyChart(id) {
       let g = elmS.select(_impl.self())
       if (g.empty()) {
         g = elmS.append('g').attr('class', classed).attr('id', id);
+        g.append('g').attr('class', 'paths');
+        g.append('g').attr('class', 'nodes');
+        g.append('g').attr('class', 'labels');
       }
+      
+      const gPaths = g.select('g.paths');
+      const gNodes = g.select('g.nodes');
+      const gLabels = g.select('g.labels');
 
-      const sankeyLayout = (data) => {
-        let fn = sankey()
-            .nodeWidth(15)
-            .nodePadding(10)
-            .extent([[0, 0], [w, h]]);
-        return fn({
-          nodes: data.nodes.map(d => Object.assign({}, d)),
-          links: data.links.map(d => Object.assign({}, d))
+      const sankeyFn = sankey()
+        .nodeWidth(nodeWidth)
+        .nodePadding(nodePadding)
+        .nodeAlign(nodeAlign)
+        .size([w, h]);
+
+
+      // Compute the new sankey layout.
+      let graph = _tickGraph; 
+      if (onlyLinks == false || graph == null) {
+        graph = sankeyFn({
+          nodes: her.nodes.map(d => Object.assign({}, d)),
+          links: her.links.map(d => Object.assign({}, d))
+        });      
+      } else if (onlyLinks) {
+        sankeyFn.update({
+          nodes: graph.nodes,
+          links: graph.links
         });
       }
 
-      // Compute the new sankey layout.
-      const { nodes, links } = sankeyLayout(her);      
-
-      let rects = g.selectAll('rect').data(nodes, (d, i) => d.id || i);
+      _tickGraph = graph;
+      
+      const nodes = graph.nodes;
+      const links = graph.links;
+      
+      let rects = gNodes.selectAll('rect').data(nodes, (d, i) => d.id || i);
      
       // Enter any new nodes at the parent's previous position.
       let nodeEnter = rects.enter().append('rect')
@@ -143,15 +182,41 @@ export default function sankeyChart(id) {
                           rtip.hide.apply(this);
                         });
       // Transition nodes to their new position.
-      let nodeUpdate = nodeEnter.merge(rects);
-      
+      let nodeUpdate = nodeEnter.merge(rects)
+            .attr('class', nodeClass);
+
+      nodeUpdate.on('click', onClick);
+
       if (transition === true) {
         nodeUpdate = nodeUpdate.transition(context);
       }
 
       nodeUpdate.attr('x', d => d.x0)
         .attr('y', d => d.y0)
-        .attr('height', d => d.y1 - d.y0)
+        .attr('height', d => {
+          const px = d.y1 - d.y0;
+
+          const srcValue = d.sourceLinks.reduce((p,c) => p + c.value, 0);
+          const tgtValue = d.targetLinks.reduce((p,c) => p + c.value, 0);
+
+          let srcPx = ZERO_VALUE_PX,
+              targetPx = ZERO_VALUE_PX;
+
+          if (tgtValue == 0) {
+            srcPx = px;
+          } else if (srcValue == 0) {
+            targetPx = px;
+          } else {
+            const scale = tgtValue / px;
+            srcPx = srcValue / scale;
+            targetPx = tgtValue / scale;
+          }
+
+          srcPx = Math.min(px, srcPx);
+          targetPx = Math.min(px, targetPx);
+
+          return targetPx;
+        })
         .attr('width', d => d.x1 - d.x0)
         .attr('fill-opacity', 1.0);
 
@@ -167,11 +232,9 @@ export default function sankeyChart(id) {
     
       rtip.hide();
 
-      if (onClick) {    
-        nodeUpdate.on('click', onClick);
-      }
 
-      let link = g.selectAll('path').data(links, d => d.source.index << 16 || d.target.index); // stability key
+
+      let link = gPaths.selectAll('path').data(links, d => d.source.index << 16 | d.target.index); // stability key
 
       let linkEnter = link.enter()
         .append('path')
@@ -180,14 +243,16 @@ export default function sankeyChart(id) {
           .attr('stroke-width', 0.0);
 
       let linkUpdate = linkEnter.merge(link)
-                          .attr('class', animated ? 'animated' : '');
+                          .attr('class', pathClass);
       
+      linkUpdate.on('click', onPathClick);
+
       if (transition === true) {
         linkUpdate = linkUpdate.transition(context);
       }
 
       linkUpdate.attr('d', sankeyLinkHorizontal())
-        .attr('stroke', d => display[theme].grid)
+        .attr('stroke', _pathFill)
         .attr('stroke-width', d => Math.max(1, d.width));
       
       let linkExit = link.exit();
@@ -198,6 +263,40 @@ export default function sankeyChart(id) {
       linkExit
         .attr('stroke-opacity', 0.0)
         .remove();  
+
+
+      let label = gLabels.selectAll('text').data(nodes, (d, i) => d.id || i);  
+
+
+      let labelEnter = label.enter()
+        .append('text')
+          .attr('dy', '0.35em')
+          .attr('fill-opacity', 0.0);
+
+      let labelUpdate = labelEnter.merge(label)
+          .attr('text-anchor', d => d.x0 < w / 2 ? 'start' : 'end')
+          .attr('class', 'default') //todo: cfg
+          .text(d => d.name); //todo: cfg
+      
+      if (transition === true) {
+        labelUpdate = labelUpdate.transition(context);
+      }
+
+      labelUpdate.attr('fill-opacity', 1.0)      
+                .attr('x', d => d.x0 < w / 2 ? d.x1 + 6 : d.x0 - 6) //todo: cfg;
+                .attr('y', d => (d.y1 + d.y0) / 2)    
+                .attr('fill', _labelFill);
+      
+      let labelExit = label.exit();
+      if (transition === true) {
+        labelExit = labelExit.transition(context);
+      }
+      
+      labelExit
+        .attr('fill-opacity', 0.0)
+        .remove();  
+        
+        
     });
     
   }
@@ -215,8 +314,7 @@ export default function sankeyChart(id) {
                   }
                   ${_impl.self()} text.default { 
                     font-family: ${fonts.variable.family};
-                    font-weight: ${fonts.variable.weightColor};  
-                    fill: ${display[_theme].text}                
+                    font-weight: ${fonts.variable.weightColor};                
                   }
                   ${_impl.self()} text::selection {
                     fill-opacity: 1.0; 
@@ -226,15 +324,7 @@ export default function sankeyChart(id) {
                     stroke-width: ${widths.outline}; 
                   }
                   ${_impl.self()} path {
-                    stroke-dasharray: 2;
-                  }
-                  ${_impl.self()} path.animated {
-                    animation: dash 35s linear infinite reverse;
-                  }
-                  @keyframes dash {
-                    to {
-                      stroke-dashoffset: 1000;
-                    }
+                    pointer-events: all;
                   }
                 `;
   
@@ -281,6 +371,10 @@ export default function sankeyChart(id) {
   _impl.onClick = function(value) {
     return arguments.length ? (onClick = value, _impl) : onClick;
   };   
+  
+  _impl.onPathClick = function(value) {
+    return arguments.length ? (onPathClick = value, _impl) : onPathClick;
+  }; 
 
   _impl.pathFill = function(value) {
     return arguments.length ? (pathFill = value, _impl) : pathFill;
@@ -298,10 +392,33 @@ export default function sankeyChart(id) {
     return arguments.length ? (tipHtml = value, _impl) : tipHtml;
   };  
 
-  _impl.animated = function(value) {
-    return arguments.length ? (animated = value, _impl) : animated;
+  _impl.pathClass = function(value) {
+    return arguments.length ? (pathClass = value, _impl) : pathClass;
+  };  
+
+  _impl.onlyLinks = function(value) {
+    return arguments.length ? (onlyLinks = value, _impl) : onlyLinks;
+  };  
+
+  _impl.nodeWidth = function(value) {
+    return arguments.length ? (nodeWidth = value, _impl) : nodeWidth;
+  };  
+
+  _impl.nodePadding = function(value) {
+    return arguments.length ? (nodePadding = value, _impl) : nodePadding;
   };  
   
+  _impl.nodeAlign = function(value) {
+    return arguments.length ? (nodeAlign = value, _impl) : nodeAlign;
+  };    
 
+  _impl.nodeClass = function(value) {
+    return arguments.length ? (nodeClass = value, _impl) : nodeClass;
+  };   
+
+  _impl.getNodes = function() {
+    return _tickGraph ? _tickGraph.nodes : null;
+  };  
+  
   return _impl;
 }
