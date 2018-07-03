@@ -18,8 +18,8 @@ const DEFAULT_ASPECT = 1.0;
 const DEFAULT_MARGIN = 32;
 const DEFAULT_TIP_OFFSET = 7;
 
-const DEFAULT_NODE_PX = 15;
-const ZERO_VALUE_PX = DEFAULT_NODE_PX / 1.618;
+const DEFAULT_NODE_PX = 16;
+const ZERO_VALUE_PX = Math.round(DEFAULT_NODE_PX / 1.618);
 
 export default function sankeyChart(id) {
   let classed = 'chart-sankey', 
@@ -191,9 +191,9 @@ export default function sankeyChart(id) {
         nodeUpdate = nodeUpdate.transition(context);
       }
       nodeUpdate.attr('d', d => {
-        const w = d.x1 - d.x0;
+        const w = Math.round(d.x1 - d.x0);
         const w2 = w / 2;
-        const px = d.y1 - d.y0;
+        const px = Math.round(d.y1 - d.y0);
 
         const srcValue = d.sourceLinks.reduce((p,c) => p + c.value, 0);
         const tgtValue = d.targetLinks.reduce((p,c) => p + c.value, 0);
@@ -206,15 +206,15 @@ export default function sankeyChart(id) {
         } else if (srcValue == 0) {
           targetPx = px;
         } else {
-          const scale = tgtValue / px;
-          srcPx = srcValue / scale;
-          targetPx = tgtValue / scale;
+          const scale = Math.max(srcValue, tgtValue) / px;
+          srcPx = (srcValue / scale);
+          targetPx = (tgtValue / scale);
         }
 
         srcPx = Math.min(px, srcPx);
         targetPx = Math.min(px, targetPx);
 
-        return `M${d.x0},${d.y0} l${w},0 l0,${srcPx} l${-w2},0 l0,${targetPx-srcPx} l${-w2},0 Z`;
+        return `M${(d.x0)},${(d.y0)} l${w},0 l0,${srcPx} l${-w2},0 l0,${targetPx-srcPx} l${-w2},0 Z`;
       })
       .attr('fill-opacity', 1.0);
 
@@ -319,7 +319,7 @@ export default function sankeyChart(id) {
                   }
                   ${_impl.self()} g.nodes path {
                     stroke: ${display[_theme].axis};
-                    stroke-width: ${widths.outline}; 
+                    stroke-width: ${widths.outline*2.0}; 
                   }
                   ${_impl.self()} path {
                     pointer-events: all;
