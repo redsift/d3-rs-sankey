@@ -19,7 +19,7 @@ const DEFAULT_MARGIN = 32;
 const DEFAULT_TIP_OFFSET = 7;
 
 const DEFAULT_NODE_PX = 15;
-const ZERO_VALUE_PX = DEFAULT_NODE_PX;
+const ZERO_VALUE_PX = DEFAULT_NODE_PX / 1.618;
 
 export default function sankeyChart(id) {
   let classed = 'chart-sankey', 
@@ -167,10 +167,10 @@ export default function sankeyChart(id) {
       const nodes = graph.nodes;
       const links = graph.links;
       
-      let rects = gNodes.selectAll('rect').data(nodes, (d, i) => d.id || i);
+      let rects = gNodes.selectAll('path').data(nodes, (d, i) => d.id || i);
      
       // Enter any new nodes at the parent's previous position.
-      let nodeEnter = rects.enter().append('rect')
+      let nodeEnter = rects.enter().append('path')
                         .attr('class', 'node')
                         .attr('fill-opacity', 0.0)
                         .attr('fill', _nodeFill)
@@ -190,35 +190,33 @@ export default function sankeyChart(id) {
       if (transition === true) {
         nodeUpdate = nodeUpdate.transition(context);
       }
+      nodeUpdate.attr('d', d => {
+        const w = d.x1 - d.x0;
+        const w2 = w / 2;
+        const px = d.y1 - d.y0;
 
-      nodeUpdate.attr('x', d => d.x0)
-        .attr('y', d => d.y0)
-        .attr('height', d => {
-          const px = d.y1 - d.y0;
+        const srcValue = d.sourceLinks.reduce((p,c) => p + c.value, 0);
+        const tgtValue = d.targetLinks.reduce((p,c) => p + c.value, 0);
 
-          const srcValue = d.sourceLinks.reduce((p,c) => p + c.value, 0);
-          const tgtValue = d.targetLinks.reduce((p,c) => p + c.value, 0);
+        let srcPx = ZERO_VALUE_PX,
+            targetPx = ZERO_VALUE_PX;
 
-          let srcPx = ZERO_VALUE_PX,
-              targetPx = ZERO_VALUE_PX;
+        if (tgtValue == 0) {
+          srcPx = px;
+        } else if (srcValue == 0) {
+          targetPx = px;
+        } else {
+          const scale = tgtValue / px;
+          srcPx = srcValue / scale;
+          targetPx = tgtValue / scale;
+        }
 
-          if (tgtValue == 0) {
-            srcPx = px;
-          } else if (srcValue == 0) {
-            targetPx = px;
-          } else {
-            const scale = tgtValue / px;
-            srcPx = srcValue / scale;
-            targetPx = tgtValue / scale;
-          }
+        srcPx = Math.min(px, srcPx);
+        targetPx = Math.min(px, targetPx);
 
-          srcPx = Math.min(px, srcPx);
-          targetPx = Math.min(px, targetPx);
-
-          return targetPx;
-        })
-        .attr('width', d => d.x1 - d.x0)
-        .attr('fill-opacity', 1.0);
+        return `M${d.x0},${d.y0} l${w},0 l0,${srcPx} l${-w2},0 l0,${targetPx-srcPx} l${-w2},0 Z`;
+      })
+      .attr('fill-opacity', 1.0);
 
       // Transition exiting nodes to the parent's new position.
       let nodeExit = rects.exit();
@@ -319,7 +317,7 @@ export default function sankeyChart(id) {
                   ${_impl.self()} text::selection {
                     fill-opacity: 1.0; 
                   }
-                  ${_impl.self()} rect {
+                  ${_impl.self()} g.nodes path {
                     stroke: ${display[_theme].axis};
                     stroke-width: ${widths.outline}; 
                   }
