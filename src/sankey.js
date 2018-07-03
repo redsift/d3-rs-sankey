@@ -18,7 +18,7 @@ const DEFAULT_ASPECT = 1.0;
 const DEFAULT_MARGIN = 32;
 const DEFAULT_TIP_OFFSET = 7;
 const DEFAULT_TEXT_OFFSET = 6;
-
+const MIN_NODE = 3;
 const DEFAULT_NODE_PX = 16;
 const ZERO_VALUE_PX = Math.round(DEFAULT_NODE_PX / 1.618);
 
@@ -78,7 +78,7 @@ export default function sankeyChart(id) {
 
     let _nodeFill = nodeFill;
     if (_nodeFill == null) {
-      const color = scaleOrdinal(presentation10.standard);
+      const color = scaleOrdinal(presentation10.standard.filter((c,i) => (i !== presentation10.names.grey)));
       _nodeFill = (d) => color(d.name.replace(/ .*/, ""));
     } else if (typeof(_nodeFill) !== 'function') {
       _nodeFill = () => nodeFill;
@@ -194,7 +194,7 @@ export default function sankeyChart(id) {
       nodeUpdate.attr('d', d => {
         const w = Math.round(d.x1 - d.x0);
         const w2 = w / 2;
-        const px = Math.round(d.y1 - d.y0);
+        const px = Math.max(Math.round(d.y1 - d.y0), MIN_NODE);
 
         const srcValue = d.sourceLinks.reduce((p,c) => p + c.value, 0);
         const tgtValue = d.targetLinks.reduce((p,c) => p + c.value, 0);
@@ -314,15 +314,18 @@ export default function sankeyChart(id) {
                     font-size: ${fonts.variable.sizeForWidth(_width)};
                   }
                   ${_impl.self()} text.default { 
+                    pointer-events: none;
+                  }
+                  ${_impl.self()} text.default { 
                     font-family: ${fonts.variable.family};
                     font-weight: ${fonts.variable.weightColor};                
                   }
                   ${_impl.self()} text::selection {
-                    fill-opacity: 1.0; 
+                    fill-opacity: 0.0; 
                   }
                   ${_impl.self()} g.nodes path {
                     stroke: ${display[_theme].axis};
-                    stroke-width: ${widths.outline*2.0}; 
+                    stroke-width: 0; 
                     shape-rendering: crispEdges;
                   }
                   ${_impl.self()} path {
