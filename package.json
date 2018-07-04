@@ -33,7 +33,7 @@
     "@redsift/d3-rs-svg": "~0.4.0",
     "@redsift/d3-rs-theme": "~0.4.2",
     "@redsift/d3-rs-tip": "^0.6.0",
-    "d3-sankey": "^0.7.1",
+    "d3-sankey-circular": "^0.28.0",
     "d3-scale": "^1.0.7",
     "d3-selection": "^1.2.0"
   },

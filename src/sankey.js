@@ -1,6 +1,6 @@
 
 import { select } from 'd3-selection';
-import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey';
+import { sankeyCircular, sankeyJustify } from 'd3-sankey-circular';
 import { scaleOrdinal } from 'd3-scale';
 
 import { body as tip } from '@redsift/d3-rs-tip';
@@ -39,7 +39,7 @@ export default function sankeyChart(id) {
       nodeFill = null,
       label = null, 
       tipHtml = null,
-      pathClass = null,
+      pathClass = d => d.circular ? 'circular' : null,
       onlyLinks = false,
       nodeWidth = DEFAULT_NODE_PX,
       nodePadding = 10,
@@ -136,13 +136,14 @@ export default function sankeyChart(id) {
         g.append('g').attr('class', 'paths');
         g.append('g').attr('class', 'nodes');
         g.append('g').attr('class', 'labels');
+        g.append('g').attr('class', 'overlays');
       }
       
       const gPaths = g.select('g.paths');
       const gNodes = g.select('g.nodes');
       const gLabels = g.select('g.labels');
 
-      const sankeyFn = sankey()
+      const sankeyFn = sankeyCircular()
         .nodeWidth(nodeWidth)
         .nodePadding(nodePadding)
         .nodeAlign(nodeAlign)
@@ -231,14 +232,11 @@ export default function sankeyChart(id) {
     
       rtip.hide();
 
-
-
       let link = gPaths.selectAll('path').data(links, d => d.source.index << 16 | d.target.index); // stability key
-
       let linkEnter = link.enter()
         .append('path')
           .attr('fill', 'none')
-          .attr('stroke-opacity', 0.85)
+          .attr('stroke-opacity', 0.66)
           .attr('stroke-width', 0.0);
 
       let linkUpdate = linkEnter.merge(link)
@@ -250,7 +248,7 @@ export default function sankeyChart(id) {
         linkUpdate = linkUpdate.transition(context);
       }
 
-      linkUpdate.attr('d', sankeyLinkHorizontal())
+      linkUpdate.attr('d',d => d.path)
         .attr('stroke', _pathFill)
         .attr('stroke-width', d => Math.max(1, d.width));
       
@@ -265,8 +263,6 @@ export default function sankeyChart(id) {
 
 
       let label = gLabels.selectAll('text').data(nodes, (d, i) => d.id || i);  
-
-
       let labelEnter = label.enter()
         .append('text')
           .attr('dy', '0.35em')
@@ -313,15 +309,13 @@ export default function sankeyChart(id) {
                   ${_impl.self()} { 
                     font-size: ${fonts.variable.sizeForWidth(_width)};
                   }
-                  ${_impl.self()} text.default { 
+                  ${_impl.self()} text { 
                     pointer-events: none;
+                    user-select: none;
                   }
                   ${_impl.self()} text.default { 
                     font-family: ${fonts.variable.family};
                     font-weight: ${fonts.variable.weightColor};                
-                  }
-                  ${_impl.self()} text::selection {
-                    fill-opacity: 0.0; 
                   }
                   ${_impl.self()} g.nodes path {
                     stroke: ${display[_theme].axis};
