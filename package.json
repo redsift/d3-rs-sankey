@@ -1,6 +1,6 @@
 {
   "name": "@redsift/d3-rs-sankey",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Generates sankey charts using D3v4.",
   "keywords": [
     "tree",
@@ -30,9 +30,9 @@
     "prepublish": "npm run build"
   },
   "dependencies": {
-    "@redsift/d3-rs-svg": "~0.4.0",
-    "@redsift/d3-rs-theme": "~0.4.2",
-    "@redsift/d3-rs-tip": "~0.9.0",
+    "@redsift/d3-rs-svg": "^0.6.0",
+    "@redsift/d3-rs-theme": "^0.4.2",
+    "@redsift/d3-rs-tip": "^0.9.0",
     "d3-sankey-circular": "^0.28.0",
     "d3-scale": "^2.1.0",
     "d3-selection": "^1.3.0"
