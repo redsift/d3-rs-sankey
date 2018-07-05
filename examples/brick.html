@@ -23,6 +23,7 @@
     <div id="middle"></div>
     <div id="three"></div>
     <div id="circular"></div>
+    <div id="empty"></div>
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://unpkg.com/d3-sankey@0"></script>
@@ -33,7 +34,7 @@
     'use strict';
       
     var all = [
-      // simple
+       // simple
       {
       "name": "simple",
       "nodes": [{"name":"Agricultural 'waste'"},{"name":"Bio-conversion"}],
@@ -58,6 +59,9 @@
       "name": "circular",
       "nodes": [{"name":"Agricultural 'waste'"},{"name":"Made up"},{"name":"Bio-conversion"}],
       "links": [{"source":0,"target":1,"value":124.729}, {"source":0,"target":2,"value":124.729},{"source":1,"target":0,"value":20.729}]
+      },
+      {
+        "name": "empty"
       }        
     ];
 

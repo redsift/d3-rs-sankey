@@ -10,7 +10,6 @@ import {
   presentation10,
   display,
   fonts,
-  widths,
 } from '@redsift/d3-rs-theme';
 
 const DEFAULT_SIZE = 800;
@@ -97,7 +96,9 @@ export default function sankeyChart(id) {
     selection.each(function() {
       let node = select(this);  
 
-      let her = node.datum();
+      let her = node.datum() || {};
+      const n = her.nodes || [];
+      const l = her.links || [];
 
       let sh = height || Math.round(width * DEFAULT_ASPECT);
       
@@ -154,8 +155,8 @@ export default function sankeyChart(id) {
       let graph = _tickGraph; 
       if (onlyLinks == false || graph == null) {
         graph = sankeyFn({
-          nodes: her.nodes.map(d => Object.assign({}, d)),
-          links: her.links.map(d => Object.assign({}, d))
+          nodes: n.map(d => Object.assign({}, d)),
+          links: l.map(d => Object.assign({}, d))
         });      
       } else if (onlyLinks) {
         sankeyFn.update({

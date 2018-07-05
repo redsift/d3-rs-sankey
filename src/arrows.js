@@ -51,7 +51,7 @@ export default function arrows() {
 
       let headData = [];
 
-      selection.each(function (d) {
+      selection.each(function () {
         let thisPath = select(this).node();
 
         let pathLength = thisPath.getTotalLength();

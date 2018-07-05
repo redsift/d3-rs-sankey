@@ -32,10 +32,10 @@
   "dependencies": {
     "@redsift/d3-rs-svg": "~0.4.0",
     "@redsift/d3-rs-theme": "~0.4.2",
-    "@redsift/d3-rs-tip": "^0.6.0",
+    "@redsift/d3-rs-tip": "~0.9.0",
     "d3-sankey-circular": "^0.28.0",
-    "d3-scale": "^1.0.7",
-    "d3-selection": "^1.2.0"
+    "d3-scale": "^2.1.0",
+    "d3-selection": "^1.3.0"
   },
   "devDependencies": {
     "@redsift/tape-reel": "~0.1.0",
