@@ -44,7 +44,8 @@ export default function sankeyChart(id) {
       nodePadding = 10,
       nodeAlign = sankeyJustify,
       nodeClass = null,
-      labelFill = null;
+      labelFill = null,
+      labelAlign = 'central';
   
   let _tickGraph = null;
 
@@ -263,16 +264,33 @@ export default function sankeyChart(id) {
         .remove();  
 
 
+      const labelX = (d) => (labelAlign == 'central') ? d.x0 < w / 2 ? d.x1 + DEFAULT_TEXT_OFFSET : d.x0 - DEFAULT_TEXT_OFFSET :
+          (labelAlign == 'stagger' && d.depth % 2 == 0) ? d.x0 < w / 2 ? d.x0 : d.x1 :
+          (d.x0 + d.x1) / 2;
+      
+
+      const labelY = (d) => (labelAlign == 'central') ? (d.y1 + d.y0) / 2 :
+          (labelAlign == 'top') ? d.y0 - DEFAULT_TEXT_OFFSET :
+          (labelAlign == 'bottom') ? d.y1 + DEFAULT_TEXT_OFFSET :
+          (d.depth % 2 == 0) ? d.y0 - DEFAULT_TEXT_OFFSET : d.y1 + DEFAULT_TEXT_OFFSET; // staggered
+      
+
       let label = gLabels.selectAll('text').data(nodes, (d, i) => d.id || i);  
       let labelEnter = label.enter()
         .append('text')
-          .attr('dy', '0.35em')
-          .attr('x', d => d.x0 < w / 2 ? d.x1 + DEFAULT_TEXT_OFFSET : d.x0 - DEFAULT_TEXT_OFFSET) //todo: cfg;
-          .attr('y', d => (d.y1 + d.y0) / 2)   
+          .attr('x', labelX) 
+          .attr('y', labelY)   
           .attr('fill-opacity', 0.0);
 
       let labelUpdate = labelEnter.merge(label)
-          .attr('text-anchor', d => d.x0 < w / 2 ? 'start' : 'end')
+          .attr('text-anchor', d => (labelAlign == 'central' || (labelAlign == 'stagger' && d.depth % 2 == 0)) ? d.x0 < w / 2 ? 'start' : 'end' :
+            'middle'
+          )
+          .attr('dominant-baseline', (d) => (labelAlign == 'central') ? 'central' : 
+                                          (labelAlign == 'top') ? 'alphabetic' :
+                                          (labelAlign == 'bottom') ? 'hanging' :
+                                          (d.depth % 2 == 0) ? 'alphabetic' : 'hanging'
+          )    
           .attr('class', 'default') //todo: cfg
           .text(d => d.name); //todo: cfg
       
@@ -281,8 +299,8 @@ export default function sankeyChart(id) {
       }
 
       labelUpdate.attr('fill-opacity', 1.0)      
-                .attr('x', d => d.x0 < w / 2 ? d.x1 + DEFAULT_TEXT_OFFSET : d.x0 - DEFAULT_TEXT_OFFSET) //todo: cfg;
-                .attr('y', d => (d.y1 + d.y0) / 2)    
+                .attr('x', labelX)
+                .attr('y', labelY)    
                 .attr('fill', _labelFill);
       
       let labelExit = label.exit();
@@ -316,7 +334,7 @@ export default function sankeyChart(id) {
                   }
                   ${_impl.self()} text.default { 
                     font-family: ${fonts.variable.family};
-                    font-weight: ${fonts.variable.weightColor};                
+                    font-weight: ${fonts.variable.weightColor};   
                   }
                   ${_impl.self()} g.nodes path {
                     stroke: ${display[_theme].axis};
@@ -386,6 +404,14 @@ export default function sankeyChart(id) {
 
   _impl.label = function(value) {
     return arguments.length ? (label = value, _impl) : label;
+  };
+
+  _impl.labelFill = function(value) {
+    return arguments.length ? (labelFill = value, _impl) : labelFill;
+  }; 
+  
+  _impl.labelAlign = function(value) {
+    return arguments.length ? (labelAlign = value, _impl) : labelAlign;
   }; 
 
   _impl.tipHtml = function(value) {
