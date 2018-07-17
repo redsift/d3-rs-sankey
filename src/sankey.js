@@ -45,7 +45,8 @@ export default function sankeyChart(id) {
       nodeAlign = sankeyJustify,
       nodeClass = null,
       labelFill = null,
-      labelAlign = 'central';
+      labelAlign = 'central',
+      text = d => d.name;
   
   let _tickGraph = null;
 
@@ -79,7 +80,7 @@ export default function sankeyChart(id) {
     let _nodeFill = nodeFill;
     if (_nodeFill == null) {
       const color = scaleOrdinal(presentation10.standard.filter((c,i) => (i !== presentation10.names.grey)));
-      _nodeFill = (d) => color(d.name.replace(/ .*/, ""));
+      _nodeFill = (d) => color(d.name ? d.name.replace(/ .*/, "") : "");
     } else if (typeof(_nodeFill) !== 'function') {
       _nodeFill = () => nodeFill;
     }
@@ -220,7 +221,7 @@ export default function sankeyChart(id) {
 
         return `M${(d.x0)},${(d.y0)} l${w},0 l0,${srcPx} l${-w2},0 l0,${targetPx-srcPx} l${-w2},0 Z`;
       })
-      .attr('fill-opacity', 1.0);
+      .attr('fill-opacity', d => (d.name || d.id) ? 1.0 : 0.0);
 
       // Transition exiting nodes to the parent's new position.
       let nodeExit = rects.exit();
@@ -292,7 +293,7 @@ export default function sankeyChart(id) {
                                           (d.depth % 2 == 0) ? 'alphabetic' : 'hanging'
           )    
           .attr('class', 'default') //todo: cfg
-          .text(d => d.name); //todo: cfg
+          .text(text); //todo: cfg
       
       if (transition === true) {
         labelUpdate = labelUpdate.transition(context);
@@ -445,6 +446,11 @@ export default function sankeyChart(id) {
   _impl.getNodes = function() {
     return _tickGraph ? _tickGraph.nodes : null;
   };  
+
+  _impl.text = function(value) {
+    return arguments.length ? (text = value, _impl) : text;
+  };  
+  
   
   return _impl;
 }

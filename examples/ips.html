@@ -23,6 +23,8 @@
     </div>
     <div id="ipptr"></div>
     <div id="ipptrno"></div>
+    <div id="packed"></div>    
+    <div id="other"></div>   
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://unpkg.com/d3-sankey@0"></script>
@@ -42,24 +44,130 @@
         "name" : "ipptrno",
         "nodes": [{"name":"209.85.218.44"},{"name":"mail-oi0-f44.google.com"},{"name":"209.85.218.45"}],
         "links": [{"source":0,"target":1,"value":1}, {"source":1,"target":2,"value":1}]
-      }            
+      },
+      {
+        "name": "packed",
+        "nodes": [
+            {
+                "name": "mail-oi0-f44.google.com",
+                "fill": "#eda3da"
+            },
+            {
+                "name": "209.85.218.44",
+                "fill": "#EDC19C"
+            },
+            {
+                "name": "mail-oi0-f44.google.com",
+                "fill": "#9af8f4"
+            },
+            {
+                "name": "209.85.218.45",
+                "fill": "#EDC19C"
+            },
+            {
+                "name": "mail-oi0-f45.google.com",
+                "fill": "#9af8f4"
+            },
+            {
+                "name": "209.85.218.46",
+                "fill": "#EDC19C"
+            },
+            {
+                "name": "mail-oi0-f46.google.com",
+                "fill": "#9af8f4"
+            }
+        ],
+        "links": [
+            {
+                "source": 0,
+                "target": 1,
+                "value": 1
+            },
+            {
+                "source": 1,
+                "target": 2,
+                "value": 1
+            },
+            {
+                "source": 0,
+                "target": 3,
+                "value": 1
+            },
+            {
+                "source": 3,
+                "target": 4,
+                "value": 1
+            },
+            {
+                "source": 0,
+                "target": 5,
+                "value": 1
+            },
+            {
+                "source": 5,
+                "target": 6,
+                "value": 1
+            },
+            {
+                "source": 2,
+                "target": 0,
+                "value": 1
+            }
+        ]
+    },
+    {
+      "name": "other",
+      "nodes": [
+          {
+              "name": "mail-oi0-f44.google.com",
+              "fill": "#eda3da"
+          },
+          {
+              "name": "209.85.218.44",
+              "fill": "#EDC19C"
+          },
+          {
+              "name": "mail-oi0-f44.google.com",
+              "fill": "#9af8f4"
+          },
+          {}
+      ],
+      "links": [
+          {
+              "source": 0,
+              "target": 1,
+              "value": 1
+          },
+          {
+              "source": 1,
+              "target": 2,
+              "value": 1
+          },
+          {
+              "source": 2,
+              "target": 0,
+              "value": 1
+          }
+      ]
+    }            
     ];
 
     var theme = 'light',
         width = 345,
-        height = 100;
+        height = 190;
 
     var charts = all.map(function (d) {
       var chart = d3_rs_sankey.html(d.name)
                       .width(width)
                       .height(height)
-                      .labelAlign(d.nodes.length == 2 ? 'top' : 'stagger'); 
+                      .labelAlign('stagger')
+                      .nodePadding(32); 
       let svg = d3.select('#' + d.name).datum(d);
 
       svg.call(chart);
 
       var pt = d3.select(chart.self());
-      var arrows = d3_rs_sankey.arrows().parent(pt.select('g.overlays'));
+      var arrows = d3_rs_sankey.arrows().parent(pt.select('g.overlays')).arrowFill('green');
       var circular = pt.selectAll('g.paths path.circular');
       circular.call(arrows);
 

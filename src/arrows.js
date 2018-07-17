@@ -9,7 +9,8 @@ export default function arrows() {
         gapLength = 50,
         arrowHeadSize = 6,
         path = d => d.path,
-        parent = null;
+        parent = null,
+        arrowFill = 'black';
   
     function _impl(context) {
 
@@ -29,7 +30,7 @@ export default function arrows() {
         .attr('fill', 'none')
         .attr('stroke-opacity', 0.0)
         .style('stroke-width', 1)
-        .style('stroke', 'black');
+        .style('stroke', arrowFill);
 
       let arrowUpdate = arrowEnter.merge(arrow);
 
@@ -126,7 +127,7 @@ export default function arrows() {
        .append('path')
        .attr('class', 'arrow-head')
        .attr('fill-opacity', 0.0)
-       .attr('fill', 'black')
+       .attr('fill', arrowFill)
        .attr('d', headFn)
        .attr('transform', headRotatefn);
 
@@ -168,11 +169,16 @@ export default function arrows() {
     }
     
     _impl.parent = function (value) {
-      if (!arguments.length) return parent
-      parent = value
-      return _impl
+      if (!arguments.length) return parent;
+      parent = value;
+      return _impl;
     }
 
+    _impl.arrowFill = function (value) {
+      if (!arguments.length) return arrowFill;
+      arrowFill = value;
+      return _impl;
+    }
     
     _impl.path = function(pathFunction) {
       if (!arguments.length) {
