@@ -52,7 +52,7 @@ export default function arrows() {
 
       let headData = [];
 
-      selection.each(function () {
+      selection.each(function (arr) {
         let thisPath = select(this).node();
 
         let pathLength = thisPath.getTotalLength();
@@ -90,7 +90,7 @@ export default function arrows() {
             }
           }
 
-          return { x: point.x, y: point.y, rotation: rotation };
+          return { x: point.x, y: point.y, rotation: rotation, link: arr };
         });
        
         headData = headData.concat(arrowHeadData);   

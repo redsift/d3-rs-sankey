@@ -33,8 +33,12 @@ export default function sankeyChart(id) {
       scale = 1.0,
       importFonts = true,
       onClick = null,
+      onNodeOver = null,
+      onNodeOut = null,
       onPathClick = null,
       pathFill = null,
+      hoveredPathFill = null,
+      selectedPathFill = null,
       nodeFill = null,
       label = null, 
       tipHtml = null,
@@ -45,6 +49,8 @@ export default function sankeyChart(id) {
       nodeAlign = sankeyJustify,
       nodeClass = null,
       labelFill = null,
+      hoveredLabelFill = null,
+      selectedLabelFill = null,
       labelAlign = 'central',
       text = d => d.name;
   
@@ -77,6 +83,20 @@ export default function sankeyChart(id) {
       _pathFill = () => pathFill;
     }
 
+    let _hoveredPathFill = hoveredPathFill;
+    if (_hoveredPathFill == null) {
+      _hoveredPathFill = () => display[theme].grid;
+    } else if (typeof(_hoveredPathFill) !== 'function') {
+      _hoveredPathFill = () => hoveredPathFill;
+    }
+
+    let _selectedPathFill = selectedPathFill;
+    if (_selectedPathFill == null) {
+      _selectedPathFill = () => display[theme].grid;
+    } else if (typeof(_selectedPathFill) !== 'function') {
+      _selectedPathFill = () => selectedPathFill;
+    }
+
     let _nodeFill = nodeFill;
     if (_nodeFill == null) {
       const color = scaleOrdinal(presentation10.standard.filter((c,i) => (i !== presentation10.names.grey)));
@@ -92,6 +112,19 @@ export default function sankeyChart(id) {
       _labelFill = () => labelFill;
     }
     
+    let _hoveredLabelFill = hoveredLabelFill;
+    if (_hoveredLabelFill == null) {
+      _hoveredLabelFill = () => display[theme].text
+    } else if (typeof(_hoveredLabelFill) !== 'function') {
+      _hoveredLabelFill = () => hoveredLabelFill;
+    }
+
+    let _selectedLabelFill = selectedLabelFill;
+    if (_selectedLabelFill == null) {
+      _selectedLabelFill = () => display[theme].text
+    } else if (typeof(_selectedLabelFill) !== 'function') {
+      _selectedLabelFill = () => selectedLabelFill;
+    }
 
     rtip.offset([ -DEFAULT_TIP_OFFSET, 1 ]).style(null).html(tipHtml).transition(333);
 
@@ -180,10 +213,14 @@ export default function sankeyChart(id) {
                         .attr('fill-opacity', 0.0)
                         .attr('fill', _nodeFill)
                         .on('mouseover', function (d) {
+                          if (onNodeOver) onNodeOver(d);
+                        
                           if (rtip.html() == null) return;
                           rtip.show.apply(this, [ d ]);
                         })
                         .on('mouseout', function () {
+                          if (onNodeOut) onNodeOut();
+
                           rtip.hide.apply(this);
                         });
       // Transition nodes to their new position.
@@ -234,7 +271,7 @@ export default function sankeyChart(id) {
           .remove();
     
       rtip.hide();
-
+      
       let link = gPaths.selectAll('path').data(links, d => d.source.index << 16 | d.target.index); // stability key
       let linkEnter = link.enter()
         .append('path')
@@ -251,8 +288,8 @@ export default function sankeyChart(id) {
         linkUpdate = linkUpdate.transition(context);
       }
 
-      linkUpdate.attr('d',d => d.path)
-        .attr('stroke', _pathFill)
+      linkUpdate.attr('d', d => d.path)
+        .attr('stroke', x => x.hovered ? _hoveredPathFill(x) : x.selected ? _selectedPathFill(x) : _pathFill(x))
         .attr('stroke-width', d => Math.max(1, d.width));
       
       let linkExit = link.exit();
@@ -281,7 +318,10 @@ export default function sankeyChart(id) {
         .append('text')
           .attr('x', labelX) 
           .attr('y', labelY)   
-          .attr('fill-opacity', 0.0);
+          .attr('fill-opacity', 0.0)
+          .on('mouseover', onNodeOver)
+          .on('mouseout',  onNodeOut)
+          .on('click', onClick);
 
       let labelUpdate = labelEnter.merge(label)
           .attr('text-anchor', d => (labelAlign == 'central' || (labelAlign == 'stagger' && d.depth % 2 == 0)) ? d.x0 < w / 2 ? 'start' : 'end' :
@@ -302,8 +342,8 @@ export default function sankeyChart(id) {
       labelUpdate.attr('fill-opacity', 1.0)      
                 .attr('x', labelX)
                 .attr('y', labelY)    
-                .attr('fill', _labelFill);
-      
+                .attr('fill', x => x.hovered ? _hoveredLabelFill(x) : x.selected ? _selectedLabelFill(x) : _labelFill(x));
+
       let labelExit = label.exit();
       if (transition === true) {
         labelExit = labelExit.transition(context);
@@ -311,11 +351,8 @@ export default function sankeyChart(id) {
       
       labelExit
         .attr('fill-opacity', 0.0)
-        .remove();  
-        
-        
+        .remove();
     });
-    
   }
   
   _impl.self = function() { return 'g' + (id ?  '#' + id : '.' + classed); }
@@ -390,6 +427,14 @@ export default function sankeyChart(id) {
   _impl.onClick = function(value) {
     return arguments.length ? (onClick = value, _impl) : onClick;
   };   
+
+  _impl.onNodeOver = function(value) {
+    return arguments.length ? (onNodeOver = value, _impl) : onNodeOver;
+  };   
+  
+  _impl.onNodeOut = function(value) {
+    return arguments.length ? (onNodeOut = value, _impl) : onNodeOut;
+  };   
   
   _impl.onPathClick = function(value) {
     return arguments.length ? (onPathClick = value, _impl) : onPathClick;
@@ -397,6 +442,14 @@ export default function sankeyChart(id) {
 
   _impl.pathFill = function(value) {
     return arguments.length ? (pathFill = value, _impl) : pathFill;
+  }; 
+
+  _impl.hoveredPathFill = function(value) {
+    return arguments.length ? (hoveredPathFill = value, _impl) : hoveredPathFill;
+  }; 
+  
+  _impl.selectedPathFill = function(value) {
+    return arguments.length ? (selectedPathFill = value, _impl) : selectedPathFill;
   }; 
   
   _impl.nodeFill = function(value) {
@@ -409,6 +462,14 @@ export default function sankeyChart(id) {
 
   _impl.labelFill = function(value) {
     return arguments.length ? (labelFill = value, _impl) : labelFill;
+  }; 
+  
+  _impl.hoveredLabelFill = function(value) {
+    return arguments.length ? (hoveredLabelFill = value, _impl) : hoveredLabelFill;
+  }; 
+  
+  _impl.selectedLabelFill = function(value) {
+    return arguments.length ? (selectedLabelFill = value, _impl) : selectedLabelFill;
   }; 
   
   _impl.labelAlign = function(value) {
@@ -449,8 +510,7 @@ export default function sankeyChart(id) {
 
   _impl.text = function(value) {
     return arguments.length ? (text = value, _impl) : text;
-  };  
-  
-  
+  };
+
   return _impl;
 }
