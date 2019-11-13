@@ -38,7 +38,7 @@ export default function sankeyChart(id) {
       onPathClick = null,
       pathFill = null,
       hoveredPathFill = null,
-      selectedPathFill = null,
+      brushedPathFill = null,
       nodeFill = null,
       label = null, 
       tipHtml = null,
@@ -51,6 +51,7 @@ export default function sankeyChart(id) {
       labelFill = null,
       hoveredLabelFill = null,
       selectedLabelFill = null,
+      brushedLabelFill = null,
       labelAlign = 'central',
       text = d => d.name;
   
@@ -90,11 +91,11 @@ export default function sankeyChart(id) {
       _hoveredPathFill = () => hoveredPathFill;
     }
 
-    let _selectedPathFill = selectedPathFill;
-    if (_selectedPathFill == null) {
-      _selectedPathFill = () => display[theme].grid;
-    } else if (typeof(_selectedPathFill) !== 'function') {
-      _selectedPathFill = () => selectedPathFill;
+    let _brushedPathFill = brushedPathFill;
+    if (_brushedPathFill == null) {
+      _brushedPathFill = () => display[theme].grid;
+    } else if (typeof(_brushedPathFill) !== 'function') {
+      _brushedPathFill = () => brushedPathFill;
     }
 
     let _nodeFill = nodeFill;
@@ -126,6 +127,13 @@ export default function sankeyChart(id) {
       _selectedLabelFill = () => selectedLabelFill;
     }
 
+    let _brushedLabelFill = brushedLabelFill;
+    if (_brushedLabelFill == null) {
+      _brushedLabelFill = () => display[theme].text
+    } else if (typeof(_brushedLabelFill) !== 'function') {
+      _brushedLabelFill = () => brushedLabelFill;
+    }
+    
     rtip.offset([ -DEFAULT_TIP_OFFSET, 1 ]).style(null).html(tipHtml).transition(333);
 
     selection.each(function() {
@@ -289,7 +297,7 @@ export default function sankeyChart(id) {
       }
 
       linkUpdate.attr('d', d => d.path)
-        .attr('stroke', x => x.hovered ? _hoveredPathFill(x) : x.selected ? _selectedPathFill(x) : _pathFill(x))
+        .attr('stroke', x => x.hovered ? _hoveredPathFill(x) : x.brushed ? _brushedPathFill(x) : _pathFill(x))
         .attr('stroke-width', d => Math.max(1, d.width));
       
       let linkExit = link.exit();
@@ -342,7 +350,7 @@ export default function sankeyChart(id) {
       labelUpdate.attr('fill-opacity', 1.0)      
                 .attr('x', labelX)
                 .attr('y', labelY)    
-                .attr('fill', x => x.hovered ? _hoveredLabelFill(x) : x.selected ? _selectedLabelFill(x) : _labelFill(x));
+                .attr('fill', x => x.hovered ? _hoveredLabelFill(x) : x.selected ? _selectedLabelFill(x) : x.brushed ? _brushedLabelFill(x) : _labelFill(x));
 
       let labelExit = label.exit();
       if (transition === true) {
@@ -448,8 +456,8 @@ export default function sankeyChart(id) {
     return arguments.length ? (hoveredPathFill = value, _impl) : hoveredPathFill;
   }; 
   
-  _impl.selectedPathFill = function(value) {
-    return arguments.length ? (selectedPathFill = value, _impl) : selectedPathFill;
+  _impl.brushedPathFill = function(value) {
+    return arguments.length ? (brushedPathFill = value, _impl) : brushedPathFill;
   }; 
   
   _impl.nodeFill = function(value) {
@@ -466,6 +474,10 @@ export default function sankeyChart(id) {
   
   _impl.hoveredLabelFill = function(value) {
     return arguments.length ? (hoveredLabelFill = value, _impl) : hoveredLabelFill;
+  }; 
+  
+  _impl.brushedLabelFill = function(value) {
+    return arguments.length ? (brushedLabelFill = value, _impl) : brushedLabelFill;
   }; 
   
   _impl.selectedLabelFill = function(value) {

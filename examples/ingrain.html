@@ -56,12 +56,13 @@
       .labelFill('#777')
       .hoveredPathFill('#333')
       .hoveredLabelFill('#000')
-      .selectedPathFill('#ff7f00')
-      .selectedLabelFill('#ff7f00')
+      .brushedPathFill('#ff7f00')
+      .brushedLabelFill('#ff7f00')
+      .selectedLabelFill('brown')
       .onNodeOver(handleNodeOver)
       .onNodeOut(handleNodeOut)
       .onClick(handleNodeClick);  
-      let svg = d3.select('#sankey').datum(data);
+    let svg = d3.select('#sankey').datum(data);
 
     svg.call(chart);
 
@@ -140,11 +141,14 @@
       const { nodes, links } = data;
       nodes.forEach(n => {
         n.hovered = false;
-        n.selected = connectedNodes.includes(n);
+        n.brushed = connectedNodes.includes(n);
+        n.selected = selectedNodeNames.has(n.name);
+        console.log(n.selected);
+        
       });
       links.forEach(l => {
         l.hovered = false;
-        l.selected = connectedLinks.includes(l);
+        l.brushed = connectedLinks.includes(l);
       });
       svg.call(chart);
     }
@@ -174,9 +178,6 @@
 
       return newData;      
     }
-
-    
-    
     </script>
   </body>
 </html>
