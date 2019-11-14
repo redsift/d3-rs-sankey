@@ -349,7 +349,8 @@ export default function sankeyChart(id) {
 
       labelUpdate.attr('fill-opacity', 1.0)      
                 .attr('x', labelX)
-                .attr('y', labelY)    
+                .attr('y', labelY) 
+                .classed('selected', x => x.selected)   
                 .attr('fill', x => x.hovered ? _hoveredLabelFill(x) : x.selected ? _selectedLabelFill(x) : x.brushed ? _brushedLabelFill(x) : _labelFill(x));
 
       let labelExit = label.exit();

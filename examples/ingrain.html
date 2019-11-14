@@ -20,6 +20,10 @@
       pointer-events: all !important;
     }
 
+    #sankey text.selected {
+      font-size: larger !important;
+    }
+
     #sankey .paths path,
     #sankey .overlays path {
       pointer-events: none !important;
@@ -54,11 +58,11 @@
       .nodePadding(15)
       .pathFill('#ccc')
       .labelFill('#777')
-      .hoveredPathFill('#333')
-      .hoveredLabelFill('#000')
-      .brushedPathFill('#ff7f00')
-      .brushedLabelFill('#ff7f00')
-      .selectedLabelFill('brown')
+      .hoveredPathFill('#ffa500')
+      .hoveredLabelFill('#ffa500')
+      .brushedPathFill('#ffc04d')
+      .brushedLabelFill('#ffa500')
+      .selectedLabelFill('#b37400')
       .onNodeOver(handleNodeOver)
       .onNodeOut(handleNodeOut)
       .onClick(handleNodeClick);  
@@ -68,7 +72,7 @@
 
     var pt = d3.select(chart.self());
     var overlays = pt.select('g.overlays');
-    var arrows = d3_rs_sankey.arrows().arrowFill('#333').parent(overlays);
+    var arrows = d3_rs_sankey.arrows().arrowFill('#cc8400').parent(overlays);
     var circular = pt.selectAll('g.paths path.circular');
     circular.call(arrows);
 
@@ -143,8 +147,6 @@
         n.hovered = false;
         n.brushed = connectedNodes.includes(n);
         n.selected = selectedNodeNames.has(n.name);
-        console.log(n.selected);
-        
       });
       links.forEach(l => {
         l.hovered = false;
