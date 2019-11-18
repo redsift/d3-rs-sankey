@@ -1,6 +1,6 @@
 {
   "name": "@redsift/d3-rs-sankey",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Generates sankey charts using D3v4.",
   "keywords": [
     "tree",
