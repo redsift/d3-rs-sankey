@@ -45,6 +45,10 @@ jobs:
           name: "Publishing to NPM"
           command: echo ~/.npmrc
           # npm publish --access=public
+      - persist_to_workspace:
+          root: /tmp/
+          paths:
+            - artifacts
   
   s3upload:
     environment: *envvars
