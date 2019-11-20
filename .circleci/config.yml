@@ -40,7 +40,8 @@ jobs:
       - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
       - run:
           name: "Publishing to NPM"
-          command: npm publish --access=public
+          command: echo ~/.npmrc
+          # npm publish --access=public
   
   s3upload:
     environment: *envvars
