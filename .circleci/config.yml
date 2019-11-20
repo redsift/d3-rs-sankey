@@ -1,7 +1,7 @@
 version: 2.1
 
 defaults:
-  working_directory: &artifactsdir /artifacts
+  working_directory: &artifactsdir /tmp/artifacts
   environment: &envvars
     CIRCLE_ARTIFACTS: *artifactsdir
     S3_BUCKET: redsift-static
@@ -20,7 +20,7 @@ commands:
       - checkout
       - run: npm i
       - run: npm test
-      - run: mkdir ${CIRCLE_ARTIFACTS}
+      - run: mkdir -p ${CIRCLE_ARTIFACTS}
       - run: mv ./distribution ${CIRCLE_ARTIFACTS}/
       - store_artifacts:
           path: *artifactsdir
@@ -48,7 +48,7 @@ jobs:
       - image: cibuilds/aws:1.16.284
     steps:
       - attach_workspace:
-          at: /
+          at: /tmp/
       # - run:
       #     name: "Uploading to S3 bucket: latest"
       #     command: aws s3 cp ${CIRCLE_ARTIFACTS}/distribution s3://$S3_BUCKET/reusable/$NAME/latest --recursive --acl public-read --cache-control max-age=7200,public
