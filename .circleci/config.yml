@@ -1,0 +1,85 @@
+version: 2.1
+
+defaults:
+  working_directory: &artifactsdir /artifacts
+  environment: &envvars
+    CIRCLE_ARTIFACTS: *artifactsdir
+    S3_BUCKET: redsift-static
+    NAME: d3-rs-sankey
+
+
+executors:
+  node:
+    docker:
+      - image: circleci/node:8.16.2
+
+
+commands:
+  build_test:
+    steps:
+      - checkout
+      - run: npm i
+      - run: npm test
+      - run: mv ./distribution ${CIRCLE_ARTIFACTS}/distribution
+      - store_artifacts:
+          path: *artifactsdir
+
+jobs:
+  build_only:
+    environment: *envvars
+    executor: node
+    steps:
+      - build_test
+
+  build_publish:
+    environment: *envvars
+    executor: node
+    steps:
+      - build_test
+      - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - run:
+          name: "Publishing to NPM"
+          command: npm publish --access=public
+  
+  s3upload:
+    environment: *envvars
+    docker:
+      - image: cibuilds/aws:1.16.284
+    steps:
+      - attach_workspace:
+          at: /
+      # - run:
+      #     name: "Uploading to S3 bucket: latest"
+      #     command: aws s3 cp ${CIRCLE_ARTIFACTS}/distribution s3://$S3_BUCKET/reusable/$NAME/latest --recursive --acl public-read --cache-control max-age=7200,public
+      - run:
+          name: "Uploading to S3 bucket: verionsed"
+          command: |
+            VERSION=$(cat package.json | python -c 'import sys, json; print json.load(sys.stdin)["version"]')-$(git describe --exact-match --tags 2>/dev/null || git rev-parse --short HEAD)
+            echo $VERSION
+            # aws s3 cp ${CIRCLE_ARTIFACTS}/distribution s3://$S3_BUCKET/reusable/$NAME/$VERSION --recursive --acl public-read --cache-control max-age=31556926,public
+      - store_artifacts:
+          path: *artifactsdir
+
+workflows:
+  version: 2.1
+  build-and-deploy:
+    jobs:
+      - build_only:
+          filters:
+            branches:
+              ignore:
+                - /release-.*/
+      - build_publish:
+          context: org-global
+          filters:
+            branches:
+              only:
+                - /release-.*/
+      - s3upload:
+          context: org-global
+          requires:
+            - build_publish
+          filters:
+            branches:
+              only:
+                - /release-.*/
