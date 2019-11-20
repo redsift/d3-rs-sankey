@@ -22,6 +22,9 @@ commands:
       - run: npm test
       - run: mkdir -p ${CIRCLE_ARTIFACTS}
       - run: mv ./distribution ${CIRCLE_ARTIFACTS}/
+      - run: |
+        v=$(echo "console.log(require('./package.json').version)" | node)-$(git describe --exact-match --tags 2>/dev/null || git rev-parse --short HEAD)
+        echo $v > ${CIRCLE_ARTIFACTS}/version.txt
       - store_artifacts:
           path: *artifactsdir
 
@@ -50,13 +53,14 @@ jobs:
     steps:
       - attach_workspace:
           at: /tmp/
+      - w
       # - run:
       #     name: "Uploading to S3 bucket: latest"
       #     command: aws s3 cp ${CIRCLE_ARTIFACTS}/distribution s3://$S3_BUCKET/reusable/$NAME/latest --recursive --acl public-read --cache-control max-age=7200,public
       - run:
           name: "Uploading to S3 bucket: verionsed"
           command: |
-            VERSION=$(cat package.json | python -c 'import sys, json; print json.load(sys.stdin)["version"]')-$(git describe --exact-match --tags 2>/dev/null || git rev-parse --short HEAD)
+            VERSION=$(cat ${CIRCLE_ARTIFACTS}/version.txt)
             echo $VERSION
             # aws s3 cp ${CIRCLE_ARTIFACTS}/distribution s3://$S3_BUCKET/reusable/$NAME/$VERSION --recursive --acl public-read --cache-control max-age=31556926,public
       - store_artifacts:
