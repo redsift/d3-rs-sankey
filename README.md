@@ -40,4 +40,6 @@
     var eml = chart.html();
     ...
 
-## TODO
+## Test
+To run the examples:
+`npm run serve`

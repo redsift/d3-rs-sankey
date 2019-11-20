@@ -22,8 +22,8 @@
     "url": "https://github.com/redsift/d3-rs-sankey.git"
   },
   "scripts": {
-    "serve": "gulp -o d3-rs-sankey -g d3-selection serve",
-    "build": "gulp -o d3-rs-sankey -g d3-selection build",
+    "serve": "./node_modules/gulp/bin/gulp.js -o d3-rs-sankey serve",
+    "build": "./node_modules/gulp/bin/gulp.js -o d3-rs-sankey build",
     "pretest": "npm outdated || true && npm run build",
     "test": "tape 'test/**/*-test.js'",
     "posttest": "eslint index.js src",
