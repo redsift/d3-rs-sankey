@@ -20,6 +20,7 @@ commands:
       - checkout
       - run: npm i
       - run: npm test
+      - run: mkdir ${CIRCLE_ARTIFACTS}
       - run: mv ./distribution ${CIRCLE_ARTIFACTS}/
       - store_artifacts:
           path: *artifactsdir
