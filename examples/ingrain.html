@@ -1,0 +1,185 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="https://static.redsift.io/reusable/ui-rs-core/latest/css/ui-rs-core.min.css">
+    <style>
+    @import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:300,500);  
+    body {
+      margin: 1em;
+    }
+    div#elm {
+      text-align: center;
+    }
+    div#buttons {
+      margin-bottom: 1em;
+    }
+    g#ipptrno g.labels text.default {
+      font-family: "Source Code Pro", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    }
+
+    #sankey text {
+      pointer-events: all !important;
+    }
+
+    #sankey text.selected {
+      font-size: larger !important;
+    }
+
+    #sankey .paths path,
+    #sankey .overlays path {
+      pointer-events: none !important;
+    }
+    </style> 
+  </head>
+  <body>
+    <div id="sankey"></div>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://unpkg.com/d3-sankey@0"></script>
+    <script src="//static.redsift.io/reusable/d3-rs-theme/latest/d3-rs-theme.umd-es2015.min.js"></script>
+    <script src="/d3-rs-sankey.umd-es2015.min.js"></script>
+    <script>
+
+    'use strict';
+
+    const data = {
+        "name": "sankey",
+        "nodes":[{"name":"0.0.0.0"},{"name":"10.0.80.11"},{"name":"10.112.14.100"},{"name":"10.112.14.102"},{"name":"10.112.14.104"},{"name":"10.112.14.107"},{"name":"10.112.14.118"},{"name":"10.20.58.10"},{"name":"10.20.58.2"},{"name":"10.20.58.4"},{"name":"10.20.58.5"},{"name":"10.20.58.9"},{"name":"10.20.63.3"},{"name":"10.20.63.5"},{"name":"10.20.63.6"},{"name":"10.20.63.7"},{"name":"10.20.63.8"},{"name":"10.20.63.9"},{"name":"10.20.89.12"},{"name":"10.20.89.2"},{"name":"10.32.0.1"},{"name":"127.0.0.1"},{"name":"169.55.60.106"},{"name":"other"},{"name":"10.1.129.46"},{"name":"10.112.14.109"},{"name":"10.20.58.11"},{"name":"10.20.58.12"},{"name":"10.20.58.3"},{"name":"10.20.58.1"},{"name":"10.20.102.5"},{"name":"10.20.63.4"},{"name":"10.20.89.7"},{"name":"10.32.0.10"},{"name":"13.228.39.146"},{"name":"159.8.146.154"},{"name":"18.231.56.185"},{"name":"185.111.75.161"},{"name":"34.242.252.249"},{"name":"52.21.22.43"},{"name":"52.56.127.26"},{"name":"52.56.127.80"},{"name":"52.60.83.48"},{"name":"52.68.223.178"},{"name":"54.200.187.189"},{"name":"66.228.119.120"},{"name":"10.32.0.38"},{"name":"151.101.60.133"},{"name":"35.241.23.245"},{"name":"159.8.146.148"},{"name":"34.192.143.20"},{"name":"34.204.129.216"},{"name":"52.20.254.60"},{"name":"216.126.13.75"},{"name":"216.135.103.232"},{"name":"216.135.78.152"},{"name":"216.152.151.93"},{"name":"216.203.94.246"},{"name":"216.220.94.246"},{"name":"216.237.122.71"},{"name":"216.237.78.152"},{"name":"216.75.2.16"},{"name":"88.161.151.93"},{"name":"88.229.78.152"},{"name":"88.229.94.246"}],
+        "links":[{"source":0,"target":1,"value":13101},{"source":0,"target":2,"value":32963},{"source":0,"target":3,"value":93091},{"source":0,"target":4,"value":378},{"source":0,"target":5,"value":2312940},{"source":0,"target":6,"value":180733},{"source":0,"target":7,"value":728},{"source":0,"target":8,"value":1388},{"source":0,"target":9,"value":72},{"source":0,"target":10,"value":368},{"source":0,"target":11,"value":471},{"source":0,"target":12,"value":5840},{"source":0,"target":13,"value":2182},{"source":0,"target":14,"value":1686},{"source":0,"target":15,"value":322},{"source":0,"target":16,"value":436},{"source":0,"target":17,"value":186},{"source":0,"target":18,"value":54844},{"source":0,"target":19,"value":76718},{"source":0,"target":20,"value":222996},{"source":0,"target":21,"value":2615},{"source":0,"target":22,"value":33317},{"source":0,"target":23,"value":495},{"source":2,"target":1,"value":15734},{"source":2,"target":24,"value":1944529},{"source":2,"target":2,"value":572729500},{"source":2,"target":3,"value":12682990},{"source":2,"target":4,"value":50661720},{"source":2,"target":5,"value":20395570},{"source":2,"target":25,"value":1353120},{"source":2,"target":6,"value":53105830},{"source":2,"target":7,"value":1169220},{"source":2,"target":26,"value":138206},{"source":2,"target":27,"value":5450306},{"source":2,"target":28,"value":40100},{"source":2,"target":10,"value":1962225},{"source":2,"target":20,"value":7305710},{"source":2,"target":23,"value":7734},{"source":29,"target":28,"value":4717793},{"source":29,"target":10,"value":177219},{"source":7,"target":2,"value":881408},{"source":7,"target":3,"value":785160},{"source":7,"target":26,"value":785160},{"source":26,"target":2,"value":189524},{"source":26,"target":30,"value":1253739},{"source":26,"target":7,"value":3174170},{"source":26,"target":8,"value":6055674},{"source":26,"target":9,"value":139424},{"source":26,"target":10,"value":806570},{"source":26,"target":11,"value":1670577},{"source":26,"target":12,"value":14038110},{"source":26,"target":31,"value":2749737},{"source":26,"target":13,"value":8822386},{"source":26,"target":14,"value":7578508},{"source":26,"target":15,"value":723589},{"source":26,"target":16,"value":3434789},{"source":26,"target":17,"value":821700},{"source":26,"target":32,"value":741710},{"source":26,"target":20,"value":341912},{"source":26,"target":33,"value":32360},{"source":26,"target":34,"value":32207},{"source":26,"target":35,"value":6249857},{"source":26,"target":22,"value":312834400},{"source":26,"target":36,"value":49279},{"source":26,"target":37,"value":721225},{"source":26,"target":38,"value":42233},{"source":26,"target":39,"value":36962},{"source":26,"target":40,"value":45397},{"source":26,"target":41,"value":51451},{"source":26,"target":42,"value":30478},{"source":26,"target":43,"value":35603},{"source":26,"target":44,"value":35339},{"source":26,"target":45,"value":298330},{"source":26,"target":23,"value":439468},{"source":27,"target":2,"value":1238961},{"source":27,"target":6,"value":69938},{"source":27,"target":46,"value":9169439},{"source":8,"target":3,"value":767536},{"source":8,"target":5,"value":988},{"source":8,"target":26,"value":773082},{"source":8,"target":33,"value":2148},{"source":8,"target":23,"value":15101},{"source":28,"target":29,"value":437373},{"source":28,"target":20,"value":3969209},{"source":9,"target":3,"value":797331},{"source":9,"target":26,"value":797514},{"source":10,"target":2,"value":2642463},{"source":10,"target":3,"value":104771},{"source":10,"target":29,"value":102141},{"source":10,"target":26,"value":106791},{"source":10,"target":23,"value":211},{"source":11,"target":3,"value":1522168},{"source":11,"target":5,"value":2151940},{"source":11,"target":25,"value":1006657},{"source":11,"target":6,"value":542453},{"source":11,"target":26,"value":1522341},{"source":11,"target":33,"value":31360},{"source":11,"target":47,"value":61500},{"source":11,"target":48,"value":95032},{"source":11,"target":23,"value":10249},{"source":21,"target":21,"value":62855670},{"source":49,"target":50,"value":48143},{"source":49,"target":51,"value":329697},{"source":49,"target":52,"value":283487},{"source":49,"target":23,"value":14426},{"source":22,"target":22,"value":199335},{"source":22,"target":23,"value":2852},{"source":53,"target":2,"value":176},{"source":54,"target":3,"value":233},{"source":55,"target":2,"value":176},{"source":56,"target":2,"value":176},{"source":56,"target":3,"value":56},{"source":57,"target":3,"value":1219},{"source":58,"target":3,"value":510},{"source":59,"target":23,"value":120},{"source":60,"target":3,"value":233},{"source":61,"target":21,"value":134},{"source":62,"target":3,"value":1027},{"source":63,"target":3,"value":1027},{"source":64,"target":3,"value":126}]
+      };
+
+    var theme = 'light',
+        width = 1000,
+        height = 800;
+
+    var chart = d3_rs_sankey
+      .html(data.name)
+      .width(width)
+      .height(height)
+      .nodePadding(15)
+      .pathFill('#ccc')
+      .labelFill('#777')
+      .hoveredPathFill('#ffa500')
+      .hoveredLabelFill('#ffa500')
+      .brushedPathFill('#ffc04d')
+      .brushedLabelFill('#ffa500')
+      .selectedLabelFill('#b37400')
+      .onNodeOver(handleNodeOver)
+      .onNodeOut(handleNodeOut)
+      .onClick(handleNodeClick);  
+    let svg = d3.select('#sankey').datum(data);
+
+    svg.call(chart);
+
+    var pt = d3.select(chart.self());
+    var overlays = pt.select('g.overlays');
+    var arrows = d3_rs_sankey.arrows().arrowFill('#cc8400').parent(overlays);
+    var circular = pt.selectAll('g.paths path.circular');
+    circular.call(arrows);
+
+    // Hide all arrows so that the sankey will display them on demand.
+    overlays.selectAll('path').style('display', 'none');
+    
+    const selectedNodeNames = new Set();
+
+    function findConnectedNodesLinks(seedNames) {
+      const { nodes, links } = data;
+      const allNodeNames = nodes.map(n => n.name);
+      const seedIndices = seedNames.map(name => allNodeNames.indexOf(name));
+      const connectedLinks = links.filter(l => seedIndices.includes(l.source) || seedIndices.includes(l.target));
+      const connectedNodeIndices = [...new Set(connectedLinks.map(l => [l.source, l.target]).flat())];
+      const connectedNodes = connectedNodeIndices.map(idx => nodes[idx]);
+
+      return [connectedNodes, connectedLinks];
+    }
+
+    function containsLink(links, source, target) {
+      return links.some(l => l.source === source && l.target === target)
+    }
+    
+    function handleNodeOver(d) {
+      const [connectedNodes, connectedLinks] = findConnectedNodesLinks([d.name]);
+      const { nodes, links } = data;
+      nodes.forEach(n => {
+        n.hovered = connectedNodes.includes(n);
+      });
+      links.forEach(l => {
+        l.hovered = connectedLinks.includes(l);
+      });
+
+      // Data in arrows aren't connected well with data in sankey. Need to update separately.
+      circular.data().forEach(l => {
+        l.hovered = connectedLinks.some(l2 => l2.source === l.source.index && l2.target === l.target.index);
+      });
+
+      // Style arrows
+      overlays.selectAll('path.arrow')
+        .style('display', x => containsLink(connectedLinks, x.source.index, x.target.index) ? 'block' : 'none');
+      overlays.selectAll('path.arrow-head')
+        .style('display', x => containsLink(connectedLinks, x.link.source.index, x.link.target.index) ? 'block' : 'none');
+
+      svg.call(chart);
+    }
+
+    function handleNodeOut() {
+      const { nodes, links } = data;
+      nodes.forEach(n => {
+        n.hovered = false;
+      });
+      links.forEach(l => {
+        l.hovered = false;
+      });
+
+      overlays.selectAll('path').style('display', 'none');
+      svg.call(chart);
+    }
+
+    function handleNodeClick(d) {
+      const { name } = d;
+      if (selectedNodeNames.has(name)) {
+        selectedNodeNames.delete(name);
+      } else {
+        selectedNodeNames.add(name);
+      }
+
+      const [connectedNodes, connectedLinks] = findConnectedNodesLinks([...selectedNodeNames]);
+      const { nodes, links } = data;
+      nodes.forEach(n => {
+        n.hovered = false;
+        n.brushed = connectedNodes.includes(n);
+        n.selected = selectedNodeNames.has(n.name);
+      });
+      links.forEach(l => {
+        l.hovered = false;
+        l.brushed = connectedLinks.includes(l);
+      });
+      svg.call(chart);
+    }
+
+    function convert(data) {
+      const newData = { name: data.name, nodes: [], links: [] };
+      const nodeLookup = {};
+      data.links.forEach(l => {
+        const sourceName = data.nodes[l.source].name + '(S)';
+        if (nodeLookup[sourceName] === undefined) {
+          nodeLookup[sourceName] = newData.nodes.length;
+          newData.nodes.push({ name: sourceName });
+        }
+
+        const targetName = data.nodes[l.target].name + '(T)';
+        if (nodeLookup[targetName] === undefined) {
+          nodeLookup[targetName] = newData.nodes.length;
+          newData.nodes.push({ name: targetName });
+        }
+
+        newData.links.push({ 
+          source: nodeLookup[sourceName], 
+          target: nodeLookup[targetName],
+          value: l.value
+        });
+      });
+
+      return newData;      
+    }
+    </script>
+  </body>
+</html>
