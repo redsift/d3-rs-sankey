@@ -42,7 +42,7 @@
     "browser-sync": "^2.26.7",
     "del": "^2.2.2",
     "eslint": "^6.6.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^2.0.0-alpha",
     "gulp-uglify": "^2.0.0",
