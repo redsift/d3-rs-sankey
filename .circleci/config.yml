@@ -1,93 +1,25 @@
 version: 2.1
 
-defaults:
-  working_directory: &artifactsdir /tmp/artifacts
-  environment: &envvars
-    CIRCLE_ARTIFACTS: *artifactsdir
-    S3_BUCKET: redsift-static
-    NAME: d3-rs-sankey
-
-
-executors:
-  node:
+jobs:
+  build:
     docker:
-      - image: circleci/node:8.16.2
-
-
-commands:
-  build_test:
+      - image: cimg/node:16.20.2-browsers
     steps:
       - checkout
-      - run: npm i
-      - run: npm test
-      - run: mkdir -p ${CIRCLE_ARTIFACTS}
-      - run: mv ./distribution ${CIRCLE_ARTIFACTS}/
-      - run: |
-          v=$(echo "console.log(require('./package.json').version)" | node)-$(git describe --exact-match --tags 2>/dev/null || git rev-parse --short HEAD)
-          echo $v > ${CIRCLE_ARTIFACTS}/version.txt
-      - store_artifacts:
-          path: *artifactsdir
-
-jobs:
-  build_only:
-    environment: *envvars
-    executor: node
-    steps:
-      - build_test
-
-  build_publish:
-    environment: *envvars
-    executor: node
-    steps:
-      - build_test
-      - run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+      - run: npm ci
+      - run: npm run test
       - run:
-          name: "Publishing to NPM"
-          command: npm publish --access=public
-      - persist_to_workspace:
-          root: /tmp/
-          paths:
-            - artifacts
-  
-  s3upload:
-    environment: *envvars
-    docker:
-      - image: cibuilds/aws:1.16.284
-    steps:
-      - attach_workspace:
-          at: /tmp/
-      - run:
-          name: "Uploading to S3 bucket: latest"
-          command: aws s3 cp ${CIRCLE_ARTIFACTS}/distribution s3://$S3_BUCKET/reusable/$NAME/latest --recursive --acl public-read --cache-control max-age=7200,public
-      - run:
-          name: "Uploading to S3 bucket: versioned"
           command: |
-            VERSION=$(cat ${CIRCLE_ARTIFACTS}/version.txt)
-            echo $VERSION
-            aws s3 cp ${CIRCLE_ARTIFACTS}/distribution s3://$S3_BUCKET/reusable/$NAME/$VERSION --recursive --acl public-read --cache-control max-age=31556926,public
-      - store_artifacts:
-          path: *artifactsdir
+            b=(${CIRCLE_BRANCH/-/ })
+            if [ $b == "release" ]; then
+              echo "Publishing to NPM"
+              npm publish --access=public
+            fi
 
 workflows:
-  version: 2.1
+  version: 2
   build-and-deploy:
     jobs:
-      - build_only:
-          filters:
-            branches:
-              ignore:
-                - /release-.*/
-      - build_publish:
+      - build:
           context: org-global
-          filters:
-            branches:
-              only:
-                - /release-.*/
-      - s3upload:
-          context: org-global
-          requires:
-            - build_publish
-          filters:
-            branches:
-              only:
-                - /release-.*/
